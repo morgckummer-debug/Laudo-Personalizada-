@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laudo da Mamae</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #f5f0eb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #3a3a3a; }
+h1.app-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.8rem; letter-spacing: 0.1em; color: #7b6fa0; margin-bottom: 4px; text-align: center; }
+.app-sub { font-size: 0.7rem; color: #a89fc0; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 24px; text-align: center; }
+.card { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 520px; box-shadow: 0 4px 24px rgba(123,111,160,0.10); margin-bottom: 24px; }
+.slabel { font-size: 0.67rem; letter-spacing: 0.18em; text-transform: uppercase; color: #b0a4cc; margin-bottom: 10px; font-weight: 600; margin-top: 20px; display: block; }
+.slabel.first { margin-top: 0; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fg { display: flex; flex-direction: column; gap: 4px; }
+.fg.full { grid-column: 1 / -1; }
+label { font-size: 0.67rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8c7eb0; font-weight: 600; }
+label span { font-size: 0.58rem; color: #c0b4d8; text-transform: none; letter-spacing: 0; font-weight: 400; }
+input, select { border: 1px solid #e0d9f0; border-radius: 8px; padding: 9px 12px; font-family: 'Nunito', sans-serif; font-size: 0.84rem; color: #3a3a3a; background: #faf9fc; outline: none; width: 100%; }
+input.erro, select.erro { border-color: #e05555 !important; background: #fff5f5; }
+.emsg { font-size: 0.63rem; color: #e05555; margin-top: 2px; display: none; }
+.emsg.vis { display: block; }
+.res-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 2px; }
+.rbtn { border: 1.5px solid #e0d9f0; border-radius: 10px; padding: 10px 6px; text-align: center; cursor: pointer; background: #faf9fc; font-size: 0.7rem; color: #8c7eb0; font-family: 'Nunito', sans-serif; font-weight: 600; line-height: 1.4; }
+.rbtn.ok { background: #9b8fc0; color: #fff; border-color: #9b8fc0; }
+.rbtn.warn { background: #e0944a; color: #fff; border-color: #e0944a; }
+.rbtn.alert { background: #e05555; color: #fff; border-color: #e05555; }
+.ubox { border: 1.5px dashed #c9c0e0; border-radius: 12px; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #faf9fc; position: relative; overflow: hidden; }
+.ubox input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; border: none; padding: 0; }
+.ubox .ui { font-size: 1.2rem; color: #c0b4d8; margin-bottom: 3px; pointer-events: none; }
+.ubox .uh { font-size: 0.63rem; color: #b0a4cc; text-align: center; pointer-events: none; }
+.ubox img.thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none; }
+.lbox { border: 1.5px dashed #c9c0e0; border-radius: 10px; height: 64px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #faf9fc; position: relative; overflow: hidden; }
+.lbox input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; border: none; padding: 0; }
+.lbox .lh { font-size: 0.68rem; color: #b0a4cc; pointer-events: none; }
+.lbox img { max-height: 52px; max-width: 180px; object-fit: contain; pointer-events: none; }
+.btn-gen { width: 100%; background: linear-gradient(135deg, #9b8fc0 0%, #c9a0c0 100%); color: #fff; border: none; border-radius: 10px; padding: 14px; font-family: 'Nunito', sans-serif; font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; margin-top: 20px; }
+.btn-gen:disabled { opacity: 0.6; cursor: not-allowed; }
+.ldmsg { text-align: center; color: #9b8fc0; font-size: 0.76rem; padding: 10px 0; display: none; }
+.pwrap { width: 100%; max-width: 720px; display: none; }
+.pacts { display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 14px; }
+.bprint { background: #7b6fa0; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-family: 'Nunito', sans-serif; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.bedit { background: transparent; color: #7b6fa0; border: 1.5px solid #c0b4d8; border-radius: 8px; padding: 10px 22px; font-family: 'Nunito', sans-serif; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+#a4 { background: #faf6f0; width: 100%; aspect-ratio: 210/297; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.13); }
+.a4top { display: flex; justify-content: space-between; align-items: flex-start; padding: 3% 5% 1% 5%; }
+.a4tl { font-size: clamp(0.65rem,1.6vw,0.95rem); color: #5a5a5a; line-height: 2; }
+.a4tl span { font-weight: 700; color: #7b6fa0; }
+.a4logo { height: clamp(42px,9vw,72px); width: auto; }
+.a4tb { text-align: center; padding: 1.5% 5% 2%; border-bottom: 1.5px solid #e8e0f4; margin: 2% 5% 0; }
+.a4ti { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem,3.5vw,2.2rem); font-weight: 400; color: #7b6fa0; line-height: 1.2; }
+.a4st { font-size: clamp(0.55rem,1.3vw,0.78rem); color: #c0b4d8; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 2px; }
+.a4intro { text-align: center; font-size: clamp(0.6rem,1.45vw,0.88rem); color: #555; line-height: 1.7; padding: 3% 8% 2.5%; font-style: italic; }
+.a4ph { display: grid; grid-template-columns: 1fr; max-width: 60%; margin-left: auto; margin-right: auto; width: 100%; margin-bottom: 4%; }
+.a4pw { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.a4pf { width: 100%; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #ede8f7; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(123,111,160,0.12); }
+.a4pf img { width: 100%; height: 100%; object-fit: cover; }
+.a4pf .noph { font-size: clamp(0.5rem,1.2vw,0.7rem); color: #c0b4d8; text-align: center; padding: 8px; }
+.a4pc { font-size: clamp(0.52rem,1.25vw,0.76rem); color: #8c7eb0; font-style: italic; }
+.a4body { font-size: clamp(0.62rem,1.5vw,0.9rem); color: #3a3a3a; line-height: 2; text-align: center; padding: 0 8%; flex: 1; }
+.a4body p { margin-bottom: 1.4em; }
+.a4ft { display: flex; justify-content: space-between; align-items: flex-end; padding: 1.5% 5% 2.5%; border-top: 1.5px solid #e8e0f4; margin: 0.5% 5% 0; }
+.a4ftl { font-size: clamp(0.5rem,1.2vw,0.72rem); color: #a89fc0; line-height: 1.7; }
+.signame { font-family: 'Cormorant Garamond', serif; font-size: clamp(0.7rem,1.8vw,1.1rem); color: #7b6fa0; font-weight: 600; }
+.sigtitle { font-size: clamp(0.48rem,1.1vw,0.66rem); color: #b0a4cc; letter-spacing: 0.06em; }
+@media print {
+  body { background: #fff; padding: 0; }
+  .card, .app-title, .app-sub, .pacts, .ldmsg { display: none !important; }
+  .pwrap { display: block !important; max-width: 100%; }
+  #a4 { box-shadow: none; width: 210mm; height: 297mm; aspect-ratio: unset; }
+}
+</style>
+</head>
+<body>
+
+<h1 class="app-title">Laudo da Mamae</h1>
+<p class="app-sub">Clinica de Ultrassom - Dra. Morgana Kummer</p>
+
+<div class="card" id="formCard">
+
+<span class="slabel first">Dados da Paciente</span>
+
+  <div class="fgrid">
+    <div class="fg full">
+      <label>Nome da paciente</label>
+      <input type="text" id="nome" placeholder="Ex: Ana Paula">
+    </div>
+  </div>
+
+<span class="slabel">Exame</span>
+
+  <div class="fgrid">
+    <div class="fg">
+      <label>Tipo</label>
+      <select id="tipoExame">
+        <option value="1tri">Morfologico 1 Tri</option>
+        <option value="2tri">Morfologico 2 Tri</option>
+        <option value="3tri">Obstetrico 3 Tri</option>
+        <option value="obs">Obstetrico</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Data</label>
+      <input type="date" id="data">
+    </div>
+    <div class="fg">
+      <label>Idade gestacional</label>
+      <input type="text" id="ig" placeholder="Ex: 28 semanas">
+      <span class="emsg" id="erroIg">Campo obrigatorio</span>
+    </div>
+    <div class="fg">
+      <label>Batimentos (bpm)</label>
+      <input type="number" id="bcf" placeholder="Ex: 148">
+      <span class="emsg" id="erroBcf">Campo obrigatorio</span>
+    </div>
+    <div class="fg">
+      <label>Peso <span>(opcional)</span></label>
+      <input type="text" id="peso" placeholder="Ex: 1.100g">
+    </div>
+    <div class="fg">
+      <label>Movimentacao</label>
+      <select id="mov">
+        <option value="vigorosa">Vigorosa</option>
+        <option value="ativa">Presente e ativa</option>
+        <option value="discreta">Discreta</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Sexo do bebe</label>
+      <select id="sexo">
+        <option value="indefinido">Indefinido</option>
+        <option value="menina">Menina</option>
+        <option value="menino">Menino</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Posicao fetal <span>(opcional)</span></label>
+      <select id="posicao">
+        <option value="">Nao informar</option>
+        <option value="Cefalica dorso direita">Cefalica - dorso direita</option>
+        <option value="Cefalica dorso esquerda">Cefalica - dorso esquerda</option>
+        <option value="Pelvica dorso direita">Pelvica - dorso direita</option>
+        <option value="Pelvica dorso esquerda">Pelvica - dorso esquerda</option>
+        <option value="Transversa polo direita">Transversa - polo dir.</option>
+        <option value="Transversa polo esquerda">Transversa - polo esq.</option>
+      </select>
+    </div>
+  </div>
+
+<span class="slabel">Resultado Geral</span>
+
+  <div class="res-grid">
+    <div class="rbtn" id="rb1" onclick="setRes('ok')">Tudo bem<br>bebe formadinho</div>
+    <div class="rbtn" id="rb2" onclick="setRes('atencao')">Achado<br>merece atencao</div>
+    <div class="rbtn" id="rb3" onclick="setRes('alteracao')">Alteracao<br>identificada</div>
+  </div>
+
+  <div id="secFoto">
+    <span class="slabel" id="lblFoto">Foto do Exame</span>
+    <div class="ubox" id="box1"><div class="ui">🌸</div><div class="uh">Clique para enviar</div><input type="file" accept="image/*" id="inp1"></div>
+  </div>
+
+<span class="slabel">Logo da Clinica</span>
+
+  <div class="lbox" id="lbox"><span class="lh">Clique para carregar o logo</span><input type="file" accept="image/*" id="inpLogo"></div>
+
+  <div class="ldmsg" id="ldmsg">Preparando o laudo com carinho...</div>
+  <button class="btn-gen" id="btnGerar">Gerar Laudo</button>
+</div>
+
+<div class="pwrap" id="pwrap">
+  <div class="pacts">
+    <button class="bedit" id="btnEdit">Editar</button>
+    <button class="bprint" id="btnPrint">Imprimir / PDF</button>
+  </div>
+  <div id="a4">
+    <div class="a4top">
+      <div class="a4tl">
+        <div>Nome: <span id="pNome"></span></div>
+        <div>Data: <span id="pData"></span></div>
+      </div>
+      <img id="pLogo" class="a4logo" src="" style="display:none;">
+    </div>
+    <div class="a4tb">
+      <div class="a4ti" id="pTitulo"></div>
+      <div class="a4st">Um momento especial para guardar no coracao</div>
+    </div>
+    <div class="a4intro" id="pIntro"></div>
+    <div class="a4ph" id="photosGrid">
+      <div class="a4pw">
+        <div class="a4pf" id="frame1"><div class="noph">Foto</div></div>
+        <div class="a4pc" id="cap1">Imagem do exame</div>
+      </div>
+    </div>
+    <div class="a4body" id="pBody"></div>
+    <div class="a4ft">
+      <div class="a4ftl" id="pFooter"></div>
+      <div><div class="signame">Dra. Morgana Kummer</div><div class="sigtitle">Especialista em Medicina Fetal</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+
+// URL da Edge Function do Supabase que faz a chamada a Anthropic no servidor.
+// Troque pelo endpoint do seu projeto depois de fazer o deploy da function.
+var LAUDO_FUNCTION_URL = 'https://SEU-PROJETO.supabase.co/functions/v1/gerar-laudo';
+// Chave publica (anon key) do Supabase - essa pode ficar no front-end, e diferente da chave da Anthropic.
+var SUPABASE_ANON_KEY = 'COLE_AQUI_SUA_ANON_KEY';
+
+window.addEventListener('load', function() {
+
+  var img1 = null;
+  var logoSrc = null;
+
+  document.getElementById('data').valueAsDate = new Date();
+
+  // Upload foto
+  var inp1 = document.getElementById('inp1');
+  var box1 = document.getElementById('box1');
+  inp1.addEventListener('change', function() {
+    var f = this.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(e) {
+      img1 = e.target.result;
+      box1.querySelector('.ui').style.display = 'none';
+      box1.querySelector('.uh').style.display = 'none';
+      var th = box1.querySelector('img.thumb');
+      if (!th) { th = document.createElement('img'); th.className = 'thumb'; box1.appendChild(th); }
+      th.src = img1;
+    };
+    rd.readAsDataURL(f);
+  });
+
+  // Upload logo
+  document.getElementById('inpLogo').addEventListener('change', function() {
+    var f = this.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(e) {
+      logoSrc = e.target.result;
+      var lh = document.querySelector('.lh');
+      if (lh) lh.style.display = 'none';
+      var img = document.getElementById('lbox').querySelector('img');
+      if (!img) { img = document.createElement('img'); document.getElementById('lbox').appendChild(img); }
+      img.src = logoSrc;
+    };
+    rd.readAsDataURL(f);
+  });
+
+  // Tipo de exame muda label da foto
+  document.getElementById('tipoExame').addEventListener('change', function() {
+    var is1 = this.value === '1tri';
+    document.getElementById('lblFoto').textContent = is1 ? 'Foto do Exame' : 'Foto do Rostinho';
+    img1 = null;
+    box1.querySelector('.ui').style.display = '';
+    box1.querySelector('.uh').style.display = '';
+    var th = box1.querySelector('img.thumb');
+    if (th) th.remove();
+  });
+
+  // Resultado geral: guarda a escolha e destaca o botao selecionado
+  window.setRes = function(valor) {
+    window._resultado = valor;
+    document.getElementById('rb1').classList.remove('ok');
+    document.getElementById('rb2').classList.remove('warn');
+    document.getElementById('rb3').classList.remove('alert');
+    if (valor === 'ok') document.getElementById('rb1').classList.add('ok');
+    if (valor === 'atencao') document.getElementById('rb2').classList.add('warn');
+    if (valor === 'alteracao') document.getElementById('rb3').classList.add('alert');
+  };
+
+  // Botao Imprimir / PDF
+  document.getElementById('btnPrint').addEventListener('click', function() {
+    var el = document.getElementById('a4');
+    var nome = document.getElementById('pNome').textContent || 'laudo';
+    var opt = {
+      margin:      0,
+      filename:    'laudo-' + nome + '.pdf',
+      image:       { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#faf6f0' },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(el).save();
+  });
+
+  // Botao Editar: volta para o formulario
+  document.getElementById('btnEdit').addEventListener('click', function() {
+    document.getElementById('formCard').style.display = 'block';
+    document.querySelector('.app-title').style.display = 'block';
+    document.querySelector('.app-sub').style.display = 'block';
+    document.getElementById('pwrap').style.display = 'none';
+  });
+
+  // Estado inicial da pagina
+  document.getElementById('formCard').style.display = 'block';
+  document.querySelector('.app-title').style.display = 'block';
+  document.querySelector('.app-sub').style.display = 'block';
+  document.getElementById('pwrap').style.display = 'none';
+
+});
+
+// Gerar laudo
+document.getElementById('btnGerar').addEventListener('click', function() {
+
+  document.getElementById('ig').classList.remove('erro');
+  document.getElementById('bcf').classList.remove('erro');
+  document.getElementById('erroIg').classList.remove('vis');
+  document.getElementById('erroBcf').classList.remove('vis');
+
+  var nome    = document.getElementById('nome').value.trim() || '';
+  var tipo    = document.getElementById('tipoExame').value;
+  var data    = document.getElementById('data').value;
+  var ig      = document.getElementById('ig').value.trim();
+  var bcf     = document.getElementById('bcf').value.trim();
+  var peso    = document.getElementById('peso').value.trim();
+  var mov     = document.getElementById('mov').value;
+  var sexo    = document.getElementById('sexo').value;
+  var posicao = document.getElementById('posicao').value;
+  var is1       = tipo === '1tri';
+  var resultado = window._resultado || '';
+
+  var ok = true;
+  if (!ig)  { document.getElementById('ig').classList.add('erro');  document.getElementById('erroIg').classList.add('vis');  ok = false; }
+  if (!bcf) { document.getElementById('bcf').classList.add('erro'); document.getElementById('erroBcf').classList.add('vis'); ok = false; }
+  if (!ok) return;
+
+  var btn = document.getElementById('btnGerar');
+  var ld  = document.getElementById('ldmsg');
+  btn.disabled = true;
+  ld.style.display = 'block';
+
+  var tipoNomes = {
+    '1tri': 'Morfologico do 1 Trimestre',
+    '2tri': 'Morfologico do 2 Trimestre',
+    '3tri': 'Obstetrico do 3 Trimestre',
+    'obs':  'Obstetrico'
+  };
+  var tipoNome = tipoNomes[tipo];
+
+  var movTextos = {
+    'vigorosa': 'agitado, se mexendo bastante',
+    'ativa':    'presente e ativo',
+    'discreta': 'presente, porem mais tranquilo hoje'
+  };
+  var movTxt = movTextos[mov] || mov;
+
+  var sexoTextos = {
+    'menina':    'O bebe e uma menina.',
+    'menino':    'O bebe e um menino.',
+    'indefinido':'O sexo do bebe ainda nao foi determinado.'
+  };
+  var sexoTxt = sexoTextos[sexo];
+
+  var resultadoTextos = {
+    'ok': is1
+      ? 'O exame foi tranquilizador. Tudo que foi possivel avaliar esta se formando certinho. Os riscos de sindromes e malformacoes sao baixos. Transmita alivio e alegria.'
+      : 'O exame foi otimo. Tudo esta formadinho, sem sinais de alteracoes. O bebe esta crescendo de forma linda e saudavel. Transmita tranquilidade e alegria.',
+    'atencao':   'O exame encontrou algo que merece acompanhamento. Use tom delicado. Diga que a medica vai acompanhar de perto e que ela nao esta sozinha.',
+    'alteracao': 'O exame identificou uma alteracao. Use tom muito delicado. Transmita acolhimento e que a medica estara ao lado em cada etapa.'
+  };
+  var resultadoTxt = resultado ? resultadoTextos[resultado] : 'Escreva de forma generica e calorosa sobre o bem-estar do bebe.';
+
+  var pesoTxt = peso    ? 'Peso: ' + peso + '. Chame de peso maravilhoso.' : 'Peso nao informado - NAO mencione peso.';
+  var posTxt  = posicao ? 'Posicao fetal: ' + posicao + '. Explique de forma simples.' : 'Posicao nao informada - NAO mencione posicao.';
+
+  var prompt = 'Escreva uma mensagem carinhosa e elegante para uma mae que acabou de fazer ultrassom.\n'
+    + 'Tipo: ' + tipoNome + '\n'
+    + 'Idade gestacional: ' + ig + '\n'
+    + pesoTxt + '\n'
+    + 'Batimentos: ' + bcf + ' bpm (normal entre 110 e 170). Diga que o coracao esta batendo forte e no ritmo certo.\n'
+    + 'Movimentacao: ' + movTxt + '\n'
+    + posTxt + '\n'
+    + 'Sexo: ' + sexoTxt + '\n'
+    + 'Resultado: ' + resultadoTxt + '\n\n'
+    + 'ESTRUTURA: 3 paragrafos.\n'
+    + '1. Idade gestacional, peso (se informado) e resultado geral.\n'
+    + '2. Batimentos, movimentacao e posicao (se informados).\n'
+    + '3. Exatamente este texto: Aproveite cada instante dessa linda espera e conte comigo para estar ao seu lado sempre que precisar. Ate a proxima! Dra. Morgana\n\n'
+    + 'REGRAS:\n'
+    + 'Use sempre seu bebe - nunca nome proprio.\n'
+    + 'ZERO termos medicos.\n'
+    + 'Se um dado nao foi informado, NAO mencione.\n'
+    + 'Para circulacao use: recebendo todos os nutrientes da placenta sem dificuldade.\n'
+    + 'Para peso use: peso maravilhoso.\n'
+    + 'No paragrafo final NAO repita o nome da mae.\n'
+    + 'Sem emojis. Portugues brasileiro acessivel.';
+
+  fetch(LAUDO_FUNCTION_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+    },
+    body: JSON.stringify({ prompt: prompt })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(json) {
+    var texto = json.content && json.content[0] ? json.content[0].text : '';
+    var encerramento = 'Aproveite cada instante dessa linda espera e conte comigo para estar ao seu lado sempre que precisar. Ate a proxima! Dra. Morgana';
+    var paragrafos = texto.split('\n').filter(function(l) { return l.trim(); });
+    var ultimo = paragrafos.length > 0 ? paragrafos[paragrafos.length - 1] : '';
+    if (ultimo.indexOf('Dra. Morgana') === -1) {
+      paragrafos.push(encerramento);
+    }
+
+    var dataFmt = '';
+    if (data) {
+      var d = new Date(data + 'T12:00:00');
+      dataFmt = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+    var intros = {
+      '1tri': 'Hoje realizamos um exame muito especial: avaliamos com cuidado o inicio do desenvolvimento do seu bebe, verificando que tudo esta crescendo certinho nessa fase tao importante.',
+      '2tri': 'O ultrassom de hoje foi um dos mais completos da gestacao. Pudemos ver o seu bebe de um jeito incrivel, cada detalhe, cada estrutura, cada traco do rostinho.',
+      '3tri': 'No terceiro trimestre, acompanhamos de perto o crescimento e o bem-estar do seu bebe. Hoje foi um dia muito especial.',
+      'obs':  'Hoje tivemos o prazer de acompanhar mais um momento da sua gestacao. O seu bebe continua crescendo com muita saude.'
+    };
+
+    document.getElementById('pNome').textContent = nome;
+    document.getElementById('pData').textContent = dataFmt;
+    document.getElementById('pTitulo').textContent = 'Ultrassom ' + tipoNome;
+    document.getElementById('pIntro').textContent = intros[tipo] || '';
+    document.getElementById('cap1').textContent = is1 ? 'Imagem do exame' : 'Rostinho do seu bebe';
+
+    var bodyEl = document.getElementById('pBody');
+    bodyEl.innerHTML = '';
+    paragrafos.forEach(function(p) {
+      var el = document.createElement('p');
+      el.textContent = p;
+      bodyEl.appendChild(el);
+    });
+
+    document.getElementById('pFooter').textContent = 'Sete Lagoas, ' + dataFmt;
+
+    var pLogo = document.getElementById('pLogo');
+    if (logoSrc) { pLogo.src = logoSrc; pLogo.style.display = 'block'; }
+    else { pLogo.style.display = 'none'; }
+
+    if (img1) document.getElementById('frame1').innerHTML = '<img src="' + img1 + '">';
+
+    document.getElementById('formCard').style.display = 'none';
+    document.querySelector('.app-title').style.display = 'none';
+    document.querySelector('.app-sub').style.display = 'none';
+    document.getElementById('pwrap').style.display = 'block';
+  })
+  .catch(function(e) { alert('Erro: ' + e.message); })
+  .finally(function() { btn.disabled = false; ld.style.display = 'none'; });
+});
+</script>
+
+</body>
+</html>
